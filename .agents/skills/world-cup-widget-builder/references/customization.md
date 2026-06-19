@@ -13,4 +13,4 @@
 
 Regenerate `WorldCupWidget.xcodeproj` with XcodeGen after changing `project.yml`.
 
-The API token is injected through `Config.local.xcconfig` into each target's Info.plist and read at runtime using `Bundle.main`.
+Release builds use the public proxy configured in `Release.xcconfig`. Debug builds can override the endpoint or inject a personal token through the ignored `Config.local.xcconfig`. Both values are read from each target's Info.plist using `Bundle.main`.

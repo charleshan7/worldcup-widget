@@ -50,6 +50,11 @@ enum WorldCupAPI {
         Bundle.main.object(forInfoDictionaryKey: "FootballDataAPIToken") as? String ?? ""
     }
 
+    /// 公开安装包优先使用云端代理，避免把 football-data.org Token 写进 App。
+    static var dataEndpoint: String {
+        Bundle.main.object(forInfoDictionaryKey: "WorldCupDataEndpoint") as? String ?? ""
+    }
+
     static let matchesURL = "https://api.football-data.org/v4/competitions/WC/matches"
 
     // 临时：模拟休赛日（清空窗口 → 回退展示未来比赛）。演示完改回 false 即恢复实时。
@@ -137,14 +142,19 @@ enum WorldCupAPI {
     }
 
     private static func fetchAll() async -> [FDMatch] {
-        guard !apiToken.isEmpty else {
-            print("WorldCupWidget: missing FOOTBALL_DATA_API_TOKEN. See Config.local.xcconfig.example.")
+        let endpoint = dataEndpoint.isEmpty ? matchesURL : dataEndpoint
+        guard let url = URL(string: endpoint) else { return [] }
+
+        if dataEndpoint.isEmpty && apiToken.isEmpty {
+            print("WorldCupWidget: configure WORLD_CUP_DATA_ENDPOINT or FOOTBALL_DATA_API_TOKEN.")
             return []
         }
-        guard let url = URL(string: matchesURL) else { return [] }
+
         var req = URLRequest(url: url)
         req.timeoutInterval = 15
-        req.setValue(apiToken, forHTTPHeaderField: "X-Auth-Token")
+        if dataEndpoint.isEmpty {
+            req.setValue(apiToken, forHTTPHeaderField: "X-Auth-Token")
+        }
         do {
             let (data, _) = try await URLSession.shared.data(for: req)
             return (try? JSONDecoder().decode(FDResponse.self, from: data).matches) ?? []

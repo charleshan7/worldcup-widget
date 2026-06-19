@@ -1,0 +1,12 @@
+{
+  "name": "worldcup-widget-api",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

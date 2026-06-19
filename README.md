@@ -11,6 +11,7 @@
 - 中文球队名、国旗、球场和分组信息
 - 根据比赛状态自动调整刷新频率
 - 使用 [football-data.org](https://www.football-data.org/) 获取比赛数据
+- 安装包通过 Cloudflare Worker 安全获取数据，不会在 App 中暴露 API Token
 - 内置 AI Skill，可帮助快速换主题、改布局或生成同款
 
 ## 怎么使用
@@ -34,7 +35,7 @@
 
 - macOS 14 或更高版本
 - Xcode
-- 一个免费的 [football-data.org](https://www.football-data.org/) API Token
+- 可选：一个免费的 [football-data.org](https://www.football-data.org/) API Token，用于改成自己的数据配置
 - 可选：[XcodeGen](https://github.com/yonaskolb/XcodeGen)，仅在修改 `project.yml` 后需要
 
 操作步骤：
@@ -52,7 +53,7 @@
    cp Config.local.xcconfig.example Config.local.xcconfig
    ```
 
-3. 打开 `Config.local.xcconfig`，填入自己的 API Token。这个文件已被 Git 忽略，不会被提交。
+3. 默认会使用项目提供的公开数据接口。如果希望改用自己的 football-data.org Token，请填写 `Config.local.xcconfig`，并按文件注释清空公开接口配置。这个文件已被 Git 忽略，不会被提交。
 4. 打开 `WorldCupWidget.xcodeproj`。
 5. 选择 `WorldCupWidget` scheme 并运行。
 6. 在桌面组件库中搜索“2026世界杯摸鱼看球小组件”并添加。

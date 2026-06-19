@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "worldcup-widget-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-06-19",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  }
+}

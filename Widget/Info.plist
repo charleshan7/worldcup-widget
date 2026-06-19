@@ -22,6 +22,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FootballDataAPIToken</key>
 	<string>$(FOOTBALL_DATA_API_TOKEN)</string>
+	<key>WorldCupDataEndpoint</key>
+	<string>$(WORLD_CUP_DATA_ENDPOINT)</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>

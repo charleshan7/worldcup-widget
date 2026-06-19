@@ -1,5 +1,6 @@
 // Safe defaults committed to Git. Personal values belong in Config.local.xcconfig.
 FOOTBALL_DATA_API_TOKEN =
+WORLD_CUP_DATA_ENDPOINT = https:/$()/worldcup-widget-api.h472169714.workers.dev/v1/matches
 
 // Optional include: the project still builds when the local file is absent.
 #include? "Config.local.xcconfig"

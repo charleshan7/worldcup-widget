@@ -18,7 +18,7 @@ targets:
     platform: macOS
     configFiles:
       Debug: Config.xcconfig
-      Release: Config.xcconfig
+      Release: Release.xcconfig
     sources:
       - path: App
       - path: Shared
@@ -40,7 +40,7 @@ targets:
     platform: macOS
     configFiles:
       Debug: Config.xcconfig
-      Release: Config.xcconfig
+      Release: Release.xcconfig
     sources:
       - path: Widget
       - path: Shared
