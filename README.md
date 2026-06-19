@@ -42,8 +42,8 @@
 1. 克隆仓库：
 
    ```bash
-   git clone https://github.com/charleshan7/2026worldcup-widget.git
-   cd 2026worldcup-widget
+   git clone https://github.com/charleshan7/worldcup-widget.git
+   cd worldcup-widget
    ```
 
 2. 创建仅保存在本机的配置文件：
