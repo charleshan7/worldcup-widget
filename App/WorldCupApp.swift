@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import WidgetKit
 
 // 菜单栏常驻：前台运行，自己用定时循环刷新（进行中 30s / 否则 180s），不受 WidgetKit 预算限制。
 @MainActor
@@ -26,6 +27,7 @@ final class ScoreStore: ObservableObject {
         snapshot = await WorldCupAPI.fetchSnapshot()
         lastUpdated = Date()
         loading = false
+        WidgetCenter.shared.reloadAllTimelines()   // 同步刷新桌面小组件
     }
 }
 
@@ -51,11 +53,11 @@ struct MenuBarLabel: View {
             if let m = store.snapshot.live.first {
                 Text("进行中 \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
             } else if let m = store.snapshot.results.last {
-                Text("\(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
+                Text("已完赛 \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
             } else if let m = store.snapshot.upcoming.first {
-                Text("\(flag(m.home)) \(WCFormat.clock(m.date)) \(flag(m.away))")
+                Text("下一场 \(flag(m.home)) \(WCFormat.dayTime(m.date)) \(flag(m.away))")
             } else {
-                Text("🏆")
+                Text("🏆 休赛日")
             }
         }
         .onAppear { store.startIfNeeded() }
@@ -86,10 +88,10 @@ struct MenuContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     section("正在进行", s.live, color: .red, upcoming: false)
-                    section("最新战报", s.results, color: .green, upcoming: false)
+                    section("已完赛", s.results, color: .green, upcoming: false)
                     section("即将开赛", s.upcoming, color: .orange, upcoming: true)
                     if s.live.isEmpty && s.results.isEmpty && s.upcoming.isEmpty {
-                        Text("暂无窗口内的比赛").font(.callout).foregroundStyle(.secondary)
+                        Text("暂无比赛").font(.callout).foregroundStyle(.secondary)
                     }
                 }
                 .padding(.vertical, 2)

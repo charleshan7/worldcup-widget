@@ -52,6 +52,9 @@ enum WorldCupAPI {
 
     static let matchesURL = "https://api.football-data.org/v4/competitions/WC/matches"
 
+    // 临时：模拟休赛日（清空窗口 → 回退展示未来比赛）。演示完改回 false 即恢复实时。
+    static let debugForceRestDay = false
+
     private static let iso: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]
@@ -68,48 +71,56 @@ enum WorldCupAPI {
 
         let raw = await fetchAll()
 
-        var results: [Match] = []
-        var live: [Match] = []
-        var upcoming: [Match] = []
+        let finishedStatuses: Set<String> = ["FINISHED", "AWARDED"]
+        let liveStatuses: Set<String> = ["IN_PLAY", "PAUSED", "SUSPENDED"]
+        let upcomingStatuses: Set<String> = ["SCHEDULED", "TIMED"]
 
-        for fm in raw {
-            guard let dt = fm.utcDate.flatMap({ iso.date(from: $0) }) else { continue }
-            guard dt >= windowLower, dt <= windowUpper else { continue }
-
-            let status = (fm.status ?? "").uppercased()
-            let m = Match(
+        // 先构造全部比赛（不限窗口）
+        let allMatches: [Match] = raw.compactMap { fm in
+            guard let dt = fm.utcDate.flatMap({ iso.date(from: $0) }) else { return nil }
+            return Match(
                 id: fm.id.map(String.init) ?? UUID().uuidString,
                 home: fm.homeTeam?.name ?? "",
                 away: fm.awayTeam?.name ?? "",
                 homeScore: fm.score?.fullTime?.home,
                 awayScore: fm.score?.fullTime?.away,
                 date: dt,
-                status: status,
+                status: (fm.status ?? "").uppercased(),
                 progress: nil,
                 group: groupLetter(fm.group),
                 venue: fm.venue ?? Fixtures.venue(fm.homeTeam?.name ?? "", fm.awayTeam?.name ?? ""),
                 city: nil
             )
-
-            switch status {
-            case "FINISHED", "AWARDED":
-                results.append(m)
-            case "IN_PLAY", "PAUSED", "SUSPENDED":
-                live.append(m)
-            case "SCHEDULED", "TIMED":
-                upcoming.append(m)
-            default:
-                break
-            }
         }
 
         let past = Date.distantPast
         let future = Date.distantFuture
 
-        // 窗口内全部比赛，按时间正序（大号会全部展示）
+        var results: [Match] = []
+        var live: [Match] = []
+        var upcoming: [Match] = []
+        for m in allMatches {
+            guard let dt = m.date, dt >= windowLower, dt <= windowUpper else { continue }
+            if finishedStatuses.contains(m.status) { results.append(m) }
+            else if liveStatuses.contains(m.status) { live.append(m) }
+            else if upcomingStatuses.contains(m.status) { upcoming.append(m) }
+        }
+
+        if debugForceRestDay { live = []; results = []; upcoming = [] }   // 模拟休赛日
         live.sort { ($0.date ?? past) < ($1.date ?? past) }
         let finalResults = results.sorted { ($0.date ?? past) < ($1.date ?? past) }
-        let finalUpcoming = upcoming.sorted { ($0.date ?? future) < ($1.date ?? future) }
+        var finalUpcoming = upcoming.sorted { ($0.date ?? future) < ($1.date ?? future) }
+
+        // 窗口内没有任何比赛 → 直接提示未来最近的 6 场（跳过队伍未定的淘汰赛）
+        if live.isEmpty && finalResults.isEmpty && finalUpcoming.isEmpty {
+            let now = Date()
+            finalUpcoming = allMatches
+                .filter { upcomingStatuses.contains($0.status)
+                    && !$0.home.isEmpty && !$0.away.isEmpty
+                    && ($0.date ?? past) >= now }
+                .sorted { ($0.date ?? future) < ($1.date ?? future) }
+            finalUpcoming = Array(finalUpcoming.prefix(6))
+        }
 
         return WorldCupSnapshot(
             live: Array(live.prefix(6)),

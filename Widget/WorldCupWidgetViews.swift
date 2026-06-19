@@ -62,7 +62,7 @@ struct CenteredMatchRow: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(WCFormat.metaTime(m))   // 时间 · 组别 · 球场（都在上面这一行）
+            Text(WCFormat.metaTime(m, withCity: true))   // 时间 · 组别 · 球场（城市）
                 .font(.system(size: 11))
                 .foregroundStyle(Color.wcMuted)
                 .lineLimit(1).minimumScaleFactor(0.65)
@@ -155,7 +155,7 @@ struct LargeView: View {
     }
 
     @ViewBuilder private var resultsBlock: some View {
-        SectionTitle(text: "最新战报", color: .wcGreen)
+        SectionTitle(text: "已完赛", color: .wcGreen)
         if snapshot.results.isEmpty {
             Text("暂无已结束的比赛").font(.system(size: 11)).foregroundStyle(Color.wcMuted)
         } else {
@@ -216,7 +216,7 @@ struct MediumView: View {
                 ForEach(live) { CenteredMatchRow(m: $0, upcoming: false, nameSize: 11) }
             }
             if !finished.isEmpty {
-                SectionTitle(text: "最新战报", color: .wcGreen)
+                SectionTitle(text: "已完赛", color: .wcGreen)
                 ForEach(finished) { CenteredMatchRow(m: $0, upcoming: false, nameSize: 11) }
             }
             if !upcoming.isEmpty {
@@ -238,9 +238,8 @@ struct SmallView: View {
         let items = snapshot.smallFeatured
         if items.isEmpty {
             VStack(spacing: 6) {
-                header(nil)
                 Spacer()
-                Text("暂无比赛数据").font(.system(size: 12)).foregroundStyle(Color.wcMuted)
+                Text("暂无比赛").font(.system(size: 12)).foregroundStyle(Color.wcMuted)
                 Spacer()
             }
         } else {
@@ -304,7 +303,7 @@ struct SmallView: View {
     private func label(_ m: Match?) -> String {
         guard let m else { return "美加墨世界杯" }
         if isLive(m) { return "进行中" }
-        return (m.homeScore == nil) ? "即将开赛" : "最新战报"
+        return (m.homeScore == nil) ? "即将开赛" : "已完赛"
     }
     private func labelColor(_ m: Match?) -> Color {
         guard let m else { return .wcMuted }
