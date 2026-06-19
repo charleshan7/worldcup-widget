@@ -85,8 +85,8 @@ struct WorldCupWidget: Widget {
                     )
                 }
         }
-        .configurationDisplayName("2026 美加墨世界杯")
-        .description("展示 2026 美加墨世界杯最新战果与即将开赛的比赛。")
+        .configurationDisplayName("2026世界杯摸鱼看球小组件")
+        .description("在 Mac 桌面悄悄查看 2026 世界杯实时比分、已完赛和即将开赛的比赛。")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }

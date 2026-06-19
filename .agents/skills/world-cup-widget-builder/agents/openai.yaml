@@ -1,4 +1,4 @@
 interface:
-  display_name: "世界杯小组件生成器"
-  short_description: "用 AI 创建并定制 macOS 世界杯实时战报小组件"
+  display_name: "2026世界杯摸鱼看球小组件"
+  short_description: "用 AI 创建并定制 macOS 世界杯摸鱼看球小组件"
   default_prompt: "Use $world-cup-widget-builder to create and customize a macOS World Cup live-score widget."

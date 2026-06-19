@@ -1,8 +1,10 @@
-# 世界杯战报 macOS 小组件
+# 2026世界杯摸鱼看球小组件
 
-一个原生 SwiftUI + WidgetKit 项目，在 macOS 桌面和菜单栏展示世界杯实时比分、最新战报与即将开赛的比赛。
+把 2026 世界杯赛程和比分放到 Mac 桌面上，工作时不用反复打开网页，也能悄悄掌握正在进行、已经结束和即将开赛的比赛。
 
-## 功能
+这是一个原生 SwiftUI + WidgetKit 项目，可同时运行在 macOS 桌面小组件和菜单栏。
+
+## 它能做什么
 
 - 小、中、大三种桌面组件
 - 菜单栏实时比分与比赛列表
@@ -11,25 +13,49 @@
 - 使用 [football-data.org](https://www.football-data.org/) 获取比赛数据
 - 内置 AI Skill，可帮助快速换主题、改布局或生成同款
 
-## 环境要求
+## 怎么使用
+
+### 1. 我只想直接用
+
+适合不想改代码，只想把小组件放到桌面上的用户。
+
+1. 在仓库右侧进入 **Releases**，下载最新版安装包。
+2. 将 App 拖入“应用程序”并打开一次。
+3. 在 macOS 桌面右键选择“编辑小组件”。
+4. 搜索“2026世界杯摸鱼看球小组件”，选择尺寸并添加到桌面。
+
+> 当前公开版仍在准备免配置安装包。正式 Release 发布前，请使用下面的“克隆源码”方式。未经 Apple 公证的测试包可能需要在“系统设置 → 隐私与安全性”中选择“仍要打开”。
+
+### 2. 我想拿走源码，自己克隆
+
+适合会使用 Xcode、希望自己维护或修改代码的用户。
+
+环境要求：
 
 - macOS 14 或更高版本
 - Xcode
-- 一个免费的 football-data.org API Token
+- 一个免费的 [football-data.org](https://www.football-data.org/) API Token
 - 可选：[XcodeGen](https://github.com/yonaskolb/XcodeGen)，仅在修改 `project.yml` 后需要
 
-## 开始使用
+操作步骤：
 
-1. 克隆仓库并进入目录。
-2. 复制本地配置：
+1. 克隆仓库：
+
+   ```bash
+   git clone https://github.com/charleshan7/world-cup-widget.git
+   cd world-cup-widget
+   ```
+
+2. 创建仅保存在本机的配置文件：
 
    ```bash
    cp Config.local.xcconfig.example Config.local.xcconfig
    ```
 
-3. 打开 `Config.local.xcconfig`，填入自己的 API Token。该文件已被 Git 忽略。
-4. 打开 `WorldCupWidget.xcodeproj`，选择 `WorldCupWidget` scheme 并运行。
-5. 在 macOS 桌面右键选择“编辑小组件”，搜索“世界杯战报”并添加。
+3. 打开 `Config.local.xcconfig`，填入自己的 API Token。这个文件已被 Git 忽略，不会被提交。
+4. 打开 `WorldCupWidget.xcodeproj`。
+5. 选择 `WorldCupWidget` scheme 并运行。
+6. 在桌面组件库中搜索“2026世界杯摸鱼看球小组件”并添加。
 
 如果修改了 `project.yml`，先运行：
 
@@ -37,17 +63,23 @@
 xcodegen generate
 ```
 
-## 用 AI 制作同款
+### 3. 我想用 Skill，让 AI 给我做一个
 
-仓库包含 `.agents/skills/world-cup-widget-builder`。在支持项目 Skill 的 AI 编程工具中打开本仓库，然后说：
+适合不会 Swift，或者想快速换主题、球队、语言、数据源和布局的用户。
 
-> 使用 world-cup-widget-builder，把它改成蓝白配色，并让大号组件显示六场比赛。
+仓库内置 `.agents/skills/world-cup-widget-builder`。在支持项目 Skill 的 AI 编程工具中打开本仓库，然后对 AI 说：
+
+> 使用 world-cup-widget-builder，帮我制作一个自己的世界杯小组件。保留实时比分，改成蓝白配色，大号组件显示六场比赛。
 
 Skill 会引导 AI 找到正确文件、保护 API Token、重新生成项目并进行构建验证。
 
-## 发布给普通用户
+你也可以继续提出更具体的要求，例如：
 
-本地编译适合个人使用和开发者测试。若要让其他人直接下载并打开，需要使用 Apple Developer ID 对 App 签名，并完成 Apple 公证。否则 macOS 可能显示“无法验证开发者”。
+- “把它改成公司品牌色”
+- “只显示中国队和我关注的球队”
+- “改成英文界面”
+- “做一个更适合上班摸鱼的小号组件”
+- “帮我编译并告诉我怎么添加到桌面”
 
 ## 数据与商标
 

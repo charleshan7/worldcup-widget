@@ -71,7 +71,7 @@ struct MenuContentView: View {
         let s = store.snapshot
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("🏆 2026 美加墨世界杯").font(.headline)
+                Text("🏆 2026世界杯摸鱼看球").font(.headline)
                 Spacer()
                 if store.loading { ProgressView().controlSize(.small) }
                 Button { Task { await store.refresh() } } label: { Image(systemName: "arrow.clockwise") }
