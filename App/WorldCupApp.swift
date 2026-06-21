@@ -47,7 +47,8 @@ final class ScoreStore: ObservableObject {
         snapshot = await WorldCupAPI.fetchSnapshot()
         lastUpdated = Date()
         loading = false
-        WidgetCenter.shared.reloadAllTimelines()   // 同步刷新桌面小组件
+        // 指定刷新世界杯组件。组件 Provider 会重新联网取数，不再复用分钟级旧缓存。
+        WidgetCenter.shared.reloadTimelines(ofKind: "WorldCupWidget")
     }
 
     func setLaunchAtLogin(_ on: Bool) {
@@ -79,7 +80,7 @@ struct MenuBarLabel: View {
     var body: some View {
         Group {
             if let m = store.snapshot.live.first {
-                Text("进行中 \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
+                Text("\(WCFormat.progressLabel(m) ?? WCFormat.clock(m.date)) \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
             } else if let m = store.snapshot.results.last {
                 Text("已完赛 \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
             } else if let m = store.snapshot.upcoming.first {

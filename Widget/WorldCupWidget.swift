@@ -36,19 +36,21 @@ struct Provider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<WCEntry>) -> Void) {
         Task {
-            // 近期已缓存则直接复用（省一次网络请求 + 离线兜底）；否则联网取数
+            // 菜单栏刷新后会要求 WidgetKit 重载时间线。这里只复用 5 秒内的缓存
+            // （供小组件自身的刷新按钮衔接），其余情况重新联网，避免卡片停留在旧比分。
             let snapshot: WorldCupSnapshot
-            if let cached = SharedStore.readFresh() {
+            if let cached = SharedStore.readFresh(maxAge: 5) {
                 snapshot = cached
             } else {
                 snapshot = await WorldCupAPI.fetchSnapshot()
             }
             let now = Date()
 
-            // 自适应刷新：进行中→3分钟（追比分）；否则→30分钟，
+            // 自适应刷新：进行中→1分钟（菜单栏也会在取到新数据后主动触发重载）；
+            // 否则→30分钟，
             // 但若有即将开赛的比赛更早开球，则在其开球后约30秒刷新（待赛→进行中）。
             let hasLive = !snapshot.live.isEmpty
-            var span: TimeInterval = hasLive ? 3 * 60 : 30 * 60
+            var span: TimeInterval = hasLive ? 60 : 30 * 60
             if !hasLive, let kickoff = snapshot.upcoming.first?.date {
                 let untilKickoff = kickoff.timeIntervalSince(now)
                 if untilKickoff > 60, untilKickoff + 30 < span {

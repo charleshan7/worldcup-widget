@@ -78,7 +78,13 @@ async function espnGoals(dates) {
             ownGoal: t.includes("own"),
           });
         }
-        if (goals.length) map[pairKey(competitors[0].team?.displayName, competitors[1].team?.displayName)] = goals;
+        const st = ev.status || comp.status || {};
+        map[pairKey(competitors[0].team?.displayName, competitors[1].team?.displayName)] = {
+          goals,
+          minute: parseInt(String(st.displayClock || ""), 10) || null, // 直播分钟
+          state: st.type?.state || "",   // in / pre / post
+          name: st.type?.name || "",     // STATUS_HALFTIME / STATUS_FIRST_HALF / ...
+        };
       }
     } catch (_) { /* 单源失败不影响整体 */ }
   }
@@ -133,21 +139,28 @@ async function enrich(matches) {
   const missing = new Set();
   for (const m of relevant) {
     const pk = pairKey(m.homeTeam?.name, m.awayTeam?.name);
-    if (!espn[pk]) missing.add(pk);
+    if (!(espn[pk]?.goals?.length)) missing.add(pk);
   }
   const tsdb = missing.size ? await tsdbGoals(dates, missing) : {};
 
   for (const m of matches) {
     const pk = pairKey(m.homeTeam?.name, m.awayTeam?.name);
-    const goals = espn[pk] || tsdb[pk];
-    if (!goals) continue;
+    const e = espn[pk];
     const hNorm = norm(m.homeTeam?.name);
-    m.goals = goals.map((g) => ({
-      player: g.player,
-      minute: g.minute,
-      isHome: g.teamNorm === hNorm,
-      ownGoal: g.ownGoal,
-    }));
+    const goals = (e?.goals?.length ? e.goals : tsdb[pk]) || null;
+    if (goals) {
+      m.goals = goals.map((g) => ({
+        player: g.player,
+        minute: g.minute,
+        isHome: g.teamNorm === hNorm,
+        ownGoal: g.ownGoal,
+      }));
+    }
+    // 直播分钟/阶段（ESPN 报告进行中时）：供"正在进行"显示进程时间/中场休息
+    if (e && e.state === "in") {
+      m.minute = e.minute;
+      m.phase = e.name;
+    }
   }
   return matches;
 }

@@ -21,7 +21,9 @@ struct Match: Identifiable, Hashable, Codable {
     let group: String?
     let venue: String?
     let city: String?
-    var goals: [Goal] = []   // 进球人+分钟（由数据代理补全，拿得到才有）
+    var goals: [Goal] = []     // 进球人+分钟（由数据代理补全，拿得到才有）
+    var minute: Int? = nil     // 直播分钟（ESPN，进行中才有）
+    var phase: String? = nil   // 直播阶段（如 STATUS_HALFTIME）
 }
 
 struct WorldCupSnapshot: Codable {
@@ -46,6 +48,8 @@ private struct FDMatch: Decodable {
     let awayTeam: FDTeam?
     let score: FDScore?
     let goals: [Goal]?
+    let minute: Int?
+    let phase: String?
 }
 private struct FDTeam: Decodable { let name: String?; let shortName: String?; let tla: String? }
 private struct FDScore: Decodable { let fullTime: FDScoreTime? }
@@ -111,7 +115,9 @@ enum WorldCupAPI {
                 group: groupLetter(fm.group),
                 venue: fm.venue ?? Fixtures.venue(fm.homeTeam?.name ?? "", fm.awayTeam?.name ?? ""),
                 city: nil,
-                goals: fm.goals ?? []
+                goals: fm.goals ?? [],
+                minute: fm.minute,
+                phase: fm.phase
             )
         }
 
@@ -289,9 +295,21 @@ enum WCFormat {
         return d.isEmpty ? t : "\(d) \(t)"
     }
 
-    /// 第一行：日期+时间 · X组（组别紧跟时间后面）
+    /// 进行中比赛的进程：中场休息 / 67' …（拿不到分钟时按开球至今估算）
+    static func progressLabel(_ m: Match) -> String? {
+        guard ["IN_PLAY", "PAUSED", "SUSPENDED"].contains(m.status) else { return nil }
+        if m.status == "PAUSED" || (m.phase ?? "").contains("HALFTIME") { return "中场休息" }
+        if let mn = m.minute { return "\(mn)'" }
+        if let d = m.date {
+            let mins = Int(Date().timeIntervalSince(d) / 60)
+            if mins >= 0, mins <= 130 { return "\(mins)'" }
+        }
+        return "进行中"
+    }
+
+    /// 第一行：进程/日期时间 · X组 · 球场（进行中显示比赛进程，否则显示开球时间）
     static func metaTime(_ m: Match, withCity: Bool = false) -> String {
-        var parts: [String] = [dayTime(m.date)]
+        var parts: [String] = [progressLabel(m) ?? dayTime(m.date)]
         if let g = m.group, !g.isEmpty { parts.append("\(g)组") }
         let v = Venues.info(venue: m.venue, rawCity: m.city)
         if !v.stadium.isEmpty {
@@ -302,6 +320,17 @@ enum WCFormat {
             }
         }
         return parts.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    /// 预告行说明：组别 · 球场（城市），不重复展示开球时间。
+    static func metaVenue(_ m: Match) -> String {
+        var parts: [String] = []
+        if let g = m.group, !g.isEmpty { parts.append("\(g)组") }
+        let v = Venues.info(venue: m.venue, rawCity: m.city)
+        if !v.stadium.isEmpty {
+            parts.append(v.city.isEmpty ? v.stadium : "\(v.stadium)（\(v.city)）")
+        }
+        return parts.joined(separator: " · ")
     }
 
     /// 第二行：球场（城市，国家）

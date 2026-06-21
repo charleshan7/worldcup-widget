@@ -16,8 +16,12 @@ cp -R "$source_app" "$staging/$app_name"
 ln -s /Applications "$staging/应用程序"
 cp "$repo_root/release/首次打开说明.txt" "$staging/"
 
-codesign --force --sign - "$staging/$app_name/Contents/PlugIns/WorldCupWidgetExtension.appex"
-codesign --force --sign - "$staging/$app_name"
+codesign --force --sign - \
+  --entitlements "$repo_root/Widget/Widget.entitlements" \
+  "$staging/$app_name/Contents/PlugIns/WorldCupWidgetExtension.appex"
+codesign --force --sign - \
+  --entitlements "$repo_root/App/App.entitlements" \
+  "$staging/$app_name"
 codesign --verify --deep --strict --verbose=2 "$staging/$app_name"
 
 hdiutil create \
