@@ -172,9 +172,6 @@ struct MenuContentView: View {
 
     var body: some View {
         let s = store.snapshot
-        let matchCount = s.live.count + s.results.count + s.upcoming.count
-        let sectionCount = [s.live, s.results, s.upcoming].filter { !$0.isEmpty }.count
-        let listHeight = max(220, matchCount * 63 + sectionCount * 30)
 
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -190,15 +187,9 @@ struct MenuContentView: View {
 
             Divider()
 
-            if matchCount <= 8 {
-                matchList(s)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                ScrollView {
-                    matchList(s)
-                }
-                .frame(height: CGFloat(min(660, listHeight)))
-            }
+            // 不滚动:面板贴合全部内容自然撑高,一屏展示完。
+            matchList(s)
+                .fixedSize(horizontal: false, vertical: true)
 
             Divider()
             HStack(spacing: 8) {
@@ -229,7 +220,7 @@ struct MenuContentView: View {
     }
 
     private func matchList(_ snapshot: WorldCupSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             section("正在进行", snapshot.live, color: .red, upcoming: false)
             section("已完赛", snapshot.results, color: .green, upcoming: false)
             section("即将开赛", snapshot.upcoming, color: .orange, upcoming: true)
@@ -256,7 +247,7 @@ struct MenuContentView: View {
         let home = Teams.info(m.home)
         let away = Teams.info(m.away)
 
-        return VStack(spacing: 4) {
+        return VStack(spacing: 2) {
             Text(WCFormat.metaTime(m, withCity: true))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -286,7 +277,7 @@ struct MenuContentView: View {
             }
             .font(.callout)
         }
-        .padding(.vertical, 5)
+        .padding(.vertical, 2)
         .frame(maxWidth: .infinity, alignment: .center)
     }
 }

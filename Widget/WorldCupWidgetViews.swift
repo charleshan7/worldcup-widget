@@ -219,21 +219,25 @@ struct LargeView: View {
         }
     }
 
-    @ViewBuilder private var resultsBlock: some View {
-        SectionTitle(text: "已完赛", color: .wcGreen)
-        if snapshot.results.isEmpty {
-            Text("暂无已结束的比赛").font(.system(size: 11)).foregroundStyle(Color.wcMuted)
-        } else {
-            rows(snapshot.results, upcoming: false)
-        }
-    }
-
-    @ViewBuilder private var upcomingBlock: some View {
-        SectionTitle(text: "即将开赛", color: .wcAmber)
-        if snapshot.upcoming.isEmpty {
-            Text("暂无即将开始的比赛").font(.system(size: 11)).foregroundStyle(Color.wcMuted)
-        } else {
-            rows(snapshot.upcoming, upcoming: true)
+    // 无正在进行时:优先展示全部已完赛,预告塞得下几条塞几条,塞不下的从尾部截断。
+    private func noLive(upcomingCount: Int) -> some View {
+        let upcoming = Array(snapshot.upcoming.prefix(upcomingCount))
+        return VStack(alignment: .leading, spacing: 3) {
+            if snapshot.results.isEmpty {
+                SectionTitle(text: "即将开赛", color: .wcAmber)
+                if upcoming.isEmpty {
+                    Text("暂无比赛").font(.system(size: 11)).foregroundStyle(Color.wcMuted)
+                } else {
+                    rows(upcoming, upcoming: true)
+                }
+            } else {
+                SectionTitle(text: "已完赛", color: .wcGreen)
+                rows(snapshot.results, upcoming: false)
+                if !upcoming.isEmpty {
+                    SectionTitle(text: "即将开赛", color: .wcAmber)
+                    rows(upcoming, upcoming: true)
+                }
+            }
         }
     }
 
@@ -278,12 +282,19 @@ struct LargeView: View {
                     liveSections(finishedCount: 2, upcomingCount: 0)
                     liveSections(finishedCount: 1, upcomingCount: 0)
                 }
-            } else if snapshot.results.isEmpty {
-                upcomingBlock
-                resultsBlock
             } else {
-                resultsBlock
-                upcomingBlock
+                // 无正在进行:优先全展示已完赛,预告自适应——塞不下就从尾部截断。
+                let uc = snapshot.upcoming.count
+                ViewThatFits(in: .vertical) {
+                    noLive(upcomingCount: uc)
+                    noLive(upcomingCount: 6)
+                    noLive(upcomingCount: 5)
+                    noLive(upcomingCount: 4)
+                    noLive(upcomingCount: 3)
+                    noLive(upcomingCount: 2)
+                    noLive(upcomingCount: 1)
+                    noLive(upcomingCount: 0)
+                }
             }
             Spacer(minLength: 0)
         }

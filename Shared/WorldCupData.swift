@@ -322,9 +322,12 @@ enum WCFormat {
         return parts.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
-    /// 预告行说明：组别 · 球场（城市），不重复展示开球时间。
+    /// 预告行说明：日期 · 组别 · 球场（城市）。带「今天/明天」以区分今天与次日的比赛；
+    /// 不重复展示开球时间（开球时间在中间大字列单独显示）。
     static func metaVenue(_ m: Match) -> String {
         var parts: [String] = []
+        let day = dayLabel(m.date)
+        if !day.isEmpty { parts.append(day) }
         if let g = m.group, !g.isEmpty { parts.append("\(g)组") }
         let v = Venues.info(venue: m.venue, rawCity: m.city)
         if !v.stadium.isEmpty {
