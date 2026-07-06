@@ -193,24 +193,46 @@ struct LargeView: View {
         }
     }
 
-    // 无正在进行时:优先展示全部已完赛,预告塞得下几条塞几条,塞不下的从尾部截断。
-    private func noLive(upcomingCount: Int) -> some View {
-        let upcoming = Array(snapshot.upcoming.prefix(upcomingCount))
-        return VStack(alignment: .leading, spacing: 3) {
-            if snapshot.results.isEmpty {
-                SectionTitle(text: "即将开赛", color: wc.amber)
-                if upcoming.isEmpty {
-                    Text("暂无比赛").font(.system(size: 11)).foregroundStyle(wc.muted)
-                } else {
-                    rows(upcoming, upcoming: true)
+    // 比赛很少(总数≤3)时:分组平铺——「已完赛」「即将开赛」两组上下均匀铺满整卡,
+    // 空白平摊进组间与上下边,看起来"从容"而不是"没内容"。
+    private func noLiveSparse(_ finished: [Match], _ upcoming: [Match]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if finished.isEmpty && upcoming.isEmpty {
+                Spacer(minLength: 6)
+                Text("暂无比赛").font(.system(size: 11)).foregroundStyle(wc.muted)
+            }
+            if !finished.isEmpty {
+                Spacer(minLength: 6)
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionTitle(text: "已完赛", color: wc.green)
+                    rows(finished, upcoming: false)
                 }
-            } else {
-                SectionTitle(text: "已完赛", color: wc.green)
-                rows(snapshot.results, upcoming: false)
-                if !upcoming.isEmpty {
+            }
+            if !upcoming.isEmpty {
+                Spacer(minLength: 6)
+                VStack(alignment: .leading, spacing: 10) {
                     SectionTitle(text: "即将开赛", color: wc.amber)
                     rows(upcoming, upcoming: true)
                 }
+            }
+            Spacer(minLength: 6)
+        }
+    }
+
+    // 无正在进行时的内容(已按总数封顶截好),字号不变,只按给定行距渲染。
+    // 行距由 ViewThatFits 从宽到紧挑第一个塞得下的:比赛少 → 宽松铺开;多 → 收紧。
+    private func noLiveBody(_ finished: [Match], _ upcoming: [Match], spacing: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: spacing) {
+            if finished.isEmpty && upcoming.isEmpty {
+                Text("暂无比赛").font(.system(size: 11)).foregroundStyle(wc.muted)
+            }
+            if !finished.isEmpty {
+                SectionTitle(text: "已完赛", color: wc.green)
+                rows(finished, upcoming: false)
+            }
+            if !upcoming.isEmpty {
+                SectionTitle(text: "即将开赛", color: wc.amber)
+                rows(upcoming, upcoming: true)
             }
         }
     }
@@ -257,17 +279,23 @@ struct LargeView: View {
                     liveSections(finishedCount: 1, upcomingCount: 0)
                 }
             } else {
-                // 无正在进行:优先全展示已完赛,预告自适应——塞不下就从尾部截断。
-                let uc = snapshot.upcoming.count
-                ViewThatFits(in: .vertical) {
-                    noLive(upcomingCount: uc)
-                    noLive(upcomingCount: 6)
-                    noLive(upcomingCount: 5)
-                    noLive(upcomingCount: 4)
-                    noLive(upcomingCount: 3)
-                    noLive(upcomingCount: 2)
-                    noLive(upcomingCount: 1)
-                    noLive(upcomingCount: 0)
+                // 无正在进行:总数封顶 7(已完赛优先、预告补足、多了截断)。
+                // 总数≤3 → 分组平铺铺满整卡;≥4 → 行距自适应(最宽 18 → 最紧 3)。
+                let maxTotal = 7
+                let finished = Array(snapshot.results.suffix(maxTotal))
+                let upcoming = Array(snapshot.upcoming.prefix(max(0, maxTotal - finished.count)))
+                if finished.count + upcoming.count <= 3 {
+                    noLiveSparse(finished, upcoming)
+                        .frame(maxHeight: .infinity)
+                        .layoutPriority(1)   // 吃掉全部剩余高度,别留给末尾的 Spacer
+                } else {
+                    ViewThatFits(in: .vertical) {
+                        noLiveBody(finished, upcoming, spacing: 18)
+                        noLiveBody(finished, upcoming, spacing: 14)
+                        noLiveBody(finished, upcoming, spacing: 10)
+                        noLiveBody(finished, upcoming, spacing: 6)
+                        noLiveBody(finished, upcoming, spacing: 3)
+                    }
                 }
             }
             Spacer(minLength: 0)
