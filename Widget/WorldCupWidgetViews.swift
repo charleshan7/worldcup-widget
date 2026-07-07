@@ -76,6 +76,45 @@ struct TeamLabel: View {
 
 private func scoreText(_ m: Match) -> String { "\(m.homeScore ?? 0) : \(m.awayScore ?? 0)" }
 
+// MARK: - 进球明细（进行中比赛：进球人+时间列在对应球队下方，左右对称）
+
+struct GoalsRow: View {
+    @Environment(\.wcPalette) private var wc
+    let goals: [Goal]
+    var fontSize: CGFloat = 9.5
+
+    private func line(_ g: Goal) -> String {
+        var s = g.player
+        if g.ownGoal { s += "（乌龙）" }
+        if let mn = g.minute { s += " \(mn)'" }
+        return s
+    }
+
+    @ViewBuilder
+    private func column(_ side: [Goal], trailing: Bool) -> some View {
+        VStack(alignment: trailing ? .trailing : .leading, spacing: 1) {
+            ForEach(Array(side.enumerated()), id: \.offset) { _, g in
+                Text(line(g))
+                    .font(.system(size: fontSize))
+                    .monospacedDigit()
+                    .foregroundStyle(wc.muted)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: trailing ? .trailing : .leading)
+    }
+
+    var body: some View {
+        let sorted = goals.sorted { ($0.minute ?? 999) < ($1.minute ?? 999) }
+        HStack(alignment: .top, spacing: 6) {
+            column(sorted.filter { $0.isHome }, trailing: true)
+            Color.clear.frame(width: 52, height: 1)   // 与比分列同宽，保持左右对称
+            column(sorted.filter { !$0.isHome }, trailing: false)
+        }
+    }
+}
+
 // MARK: - 排布 B：居中对阵式（小/中号用）
 
 struct CenteredMatchRow: View {
@@ -83,6 +122,7 @@ struct CenteredMatchRow: View {
     let m: Match
     let upcoming: Bool
     var nameSize: CGFloat = 12.5
+    var showGoals: Bool = false   // 进行中比赛（中/大卡）：进球人+时间列在对应球队下方
 
     var body: some View {
         VStack(spacing: 2) {
@@ -100,6 +140,10 @@ struct CenteredMatchRow: View {
                     .foregroundStyle(upcoming ? wc.amber : wc.text)
                     .frame(width: 52)
                 TeamLabel(name: m.away, trailing: false, nameSize: nameSize)
+            }
+
+            if showGoals && !m.goals.isEmpty {
+                GoalsRow(goals: m.goals, fontSize: nameSize - 2)
             }
         }
     }
@@ -193,29 +237,24 @@ struct LargeView: View {
         }
     }
 
-    // 比赛很少(总数≤3)时:分组平铺——「已完赛」「即将开赛」两组上下均匀铺满整卡,
-    // 空白平摊进组间与上下边,看起来"从容"而不是"没内容"。
+    // 比赛很少(总数≤3)时也贴着标题往上排，避免只剩一两场预告时内容沉到中间。
     private func noLiveSparse(_ finished: [Match], _ upcoming: [Match]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 10) {
             if finished.isEmpty && upcoming.isEmpty {
-                Spacer(minLength: 6)
                 Text("暂无比赛").font(.system(size: 11)).foregroundStyle(wc.muted)
             }
             if !finished.isEmpty {
-                Spacer(minLength: 6)
                 VStack(alignment: .leading, spacing: 10) {
                     SectionTitle(text: "已完赛", color: wc.green)
                     rows(finished, upcoming: false)
                 }
             }
             if !upcoming.isEmpty {
-                Spacer(minLength: 6)
                 VStack(alignment: .leading, spacing: 10) {
                     SectionTitle(text: "即将开赛", color: wc.amber)
                     rows(upcoming, upcoming: true)
                 }
             }
-            Spacer(minLength: 6)
         }
     }
 
@@ -244,7 +283,7 @@ struct LargeView: View {
         return VStack(alignment: .leading, spacing: 3) {
             SectionTitle(text: "正在进行", color: wc.red)
             ForEach(snapshot.live.prefix(1)) {
-                CenteredMatchRow(m: $0, upcoming: false, nameSize: 11.5)
+                CenteredMatchRow(m: $0, upcoming: false, nameSize: 11.5, showGoals: true)
             }
 
             if !finished.isEmpty {
@@ -286,8 +325,6 @@ struct LargeView: View {
                 let upcoming = Array(snapshot.upcoming.prefix(max(0, maxTotal - finished.count)))
                 if finished.count + upcoming.count <= 3 {
                     noLiveSparse(finished, upcoming)
-                        .frame(maxHeight: .infinity)
-                        .layoutPriority(1)   // 吃掉全部剩余高度,别留给末尾的 Spacer
                 } else {
                     ViewThatFits(in: .vertical) {
                         noLiveBody(finished, upcoming, spacing: 18)
@@ -309,22 +346,33 @@ struct MediumView: View {
     @Environment(\.wcPalette) private var wc
     let snapshot: WorldCupSnapshot
 
+    // 进行中 + 预告 n 场；进球明细占掉空间时预告按 2→1→0 让位（被挤掉的不展示）
+    private func liveBody(upcomingCount: Int) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            SectionTitle(text: "正在进行", color: wc.red)
+            if let liveMatch = snapshot.live.first {
+                CenteredMatchRow(m: liveMatch, upcoming: false, nameSize: 11, showGoals: true)
+            }
+
+            let upcoming = Array(snapshot.upcoming.prefix(upcomingCount))
+            if !upcoming.isEmpty {
+                SectionTitle(text: "即将开赛", color: wc.amber)
+                ForEach(upcoming) {
+                    UpcomingMatchRow(m: $0, nameSize: 11)
+                }
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             WidgetHeader(updated: snapshot.updated, compact: true)
 
             if !snapshot.live.isEmpty {
-                SectionTitle(text: "正在进行", color: wc.red)
-                if let liveMatch = snapshot.live.first {
-                    CenteredMatchRow(m: liveMatch, upcoming: false, nameSize: 11)
-                }
-
-                let upcoming = Array(snapshot.upcoming.prefix(2))
-                if !upcoming.isEmpty {
-                    SectionTitle(text: "即将开赛", color: wc.amber)
-                    ForEach(upcoming) {
-                        UpcomingMatchRow(m: $0, nameSize: 11)
-                    }
+                ViewThatFits(in: .vertical) {
+                    liveBody(upcomingCount: 2)
+                    liveBody(upcomingCount: 1)
+                    liveBody(upcomingCount: 0)
                 }
             } else {
                 let finished = Array(snapshot.results.suffix(2))
