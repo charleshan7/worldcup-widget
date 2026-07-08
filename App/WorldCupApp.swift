@@ -11,6 +11,7 @@ final class ScoreStore: ObservableObject {
     @Published var loading = true
     @Published var launchAtLogin = false
     @Published var theme: WidgetTheme = ThemePref.get()
+    @Published var barShowsResult = true   // 菜单栏轮播:true=已完赛,false=下一场
     private var started = false
     private var activity: NSObjectProtocol?
     private let themeServer = ThemeServer()   // 供桌面组件读取外观的本地服务
@@ -27,6 +28,13 @@ final class ScoreStore: ObservableObject {
         // 每次启动校正登录项（自愈）：ad-hoc 签名把代码哈希钉进登录项记录，
         // 重装/重建后哈希变化会让旧记录失效，这里据用户意愿用当前哈希重新登记。
         reconcileLoginItem()
+        // 菜单栏标签轮播：无进行中时,每 12 秒在「已完赛」与「下一场预告」间切换
+        Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 12_000_000_000)
+                barShowsResult.toggle()
+            }
+        }
         Task { @MainActor in
             while !Task.isCancelled {
                 await refresh()
@@ -150,12 +158,14 @@ struct WorldCupApp: App {
 struct MenuBarLabel: View {
     @ObservedObject var store: ScoreStore
     var body: some View {
+        let result = store.snapshot.results.last
+        let next = store.snapshot.upcoming.first
         Group {
             if let m = store.snapshot.live.first {
                 Text("\(WCFormat.progressLabel(m) ?? WCFormat.clock(m.date)) \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
-            } else if let m = store.snapshot.results.last {
+            } else if let m = result, store.barShowsResult || next == nil {
                 Text("已完赛 \(flag(m.home))\(m.homeScore ?? 0)-\(m.awayScore ?? 0)\(flag(m.away))")
-            } else if let m = store.snapshot.upcoming.first {
+            } else if let m = next {
                 Text("下一场 \(flag(m.home)) \(WCFormat.dayTime(m.date)) \(flag(m.away))")
             } else {
                 Text("🏆 休赛日")

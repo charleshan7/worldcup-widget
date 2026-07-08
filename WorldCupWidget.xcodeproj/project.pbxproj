@@ -70,8 +70,8 @@
 		F032196034A74E381961DDA4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F346E817796F41A42976AF06 /* WorldCupWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldCupWidgetViews.swift; sourceTree = "<group>"; };
 		F9FF98609E8853FDB80ED280 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		"TEMP_5BA82B3B-AEC9-4445-A446-3ACBAB72D56C" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
-		"TEMP_B99BBB22-D3A2-4772-913D-AE55A516149E" /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		"TEMP_4ACE3CF0-6780-46E7-B40E-4BD4A3032002" /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		"TEMP_9CB29447-1AFD-4C3A-9678-21CD87E4F993" /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -131,11 +131,11 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		"TEMP_D3A9276D-B188-45A5-91FD-C8D4F0971F89" /* WorldCupWidget */ = {
+		"TEMP_40CC7A33-0839-4956-A4DD-C2C8E43D28C6" /* WorldCupWidget */ = {
 			isa = PBXGroup;
 			children = (
-				"TEMP_5BA82B3B-AEC9-4445-A446-3ACBAB72D56C" /* Config.xcconfig */,
-				"TEMP_B99BBB22-D3A2-4772-913D-AE55A516149E" /* Release.xcconfig */,
+				"TEMP_9CB29447-1AFD-4C3A-9678-21CD87E4F993" /* Config.xcconfig */,
+				"TEMP_4ACE3CF0-6780-46E7-B40E-4BD4A3032002" /* Release.xcconfig */,
 			);
 			path = WorldCupWidget;
 			sourceTree = "<group>";
@@ -315,7 +315,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -335,7 +335,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.2.4;
+				MARKETING_VERSION = 1.2.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -350,7 +350,7 @@
 		};
 		A099C99B4B62A6BA49F270E5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_B99BBB22-D3A2-4772-913D-AE55A516149E" /* Release.xcconfig */;
+			baseConfigurationReference = "TEMP_4ACE3CF0-6780-46E7-B40E-4BD4A3032002" /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
@@ -370,7 +370,7 @@
 		};
 		D5E358AFE5C36CB7A063D461 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_5BA82B3B-AEC9-4445-A446-3ACBAB72D56C" /* Config.xcconfig */;
+			baseConfigurationReference = "TEMP_9CB29447-1AFD-4C3A-9678-21CD87E4F993" /* Config.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Widget/Widget.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -391,7 +391,7 @@
 		};
 		DEF56FD2C3664D931C8F6B55 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_5BA82B3B-AEC9-4445-A446-3ACBAB72D56C" /* Config.xcconfig */;
+			baseConfigurationReference = "TEMP_9CB29447-1AFD-4C3A-9678-21CD87E4F993" /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
@@ -411,7 +411,7 @@
 		};
 		E896384784F97CAEE630E4F7 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = "TEMP_B99BBB22-D3A2-4772-913D-AE55A516149E" /* Release.xcconfig */;
+			baseConfigurationReference = "TEMP_4ACE3CF0-6780-46E7-B40E-4BD4A3032002" /* Release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = Widget/Widget.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -465,7 +465,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -479,7 +479,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.2.4;
+				MARKETING_VERSION = 1.2.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
