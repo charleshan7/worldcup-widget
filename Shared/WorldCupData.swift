@@ -87,9 +87,10 @@ enum WorldCupAPI {
         let today = Date()
         let cal = Calendar.current
         let todayStart = cal.startOfDay(for: today)
-        // 今天 00:00 ~ 明天 12:00（本地/北京时间）之间开球的比赛
+        // 今天 00:00 ~ 未来 7 天（本地/北京时间）之间开球的比赛。
+        // 这样菜单栏/中大卡有足够的预告数据可填充；具体展示数量由各尺寸卡片自行裁剪。
         let windowLower = todayStart
-        let windowUpper = cal.date(byAdding: DateComponents(day: 1, hour: 12), to: todayStart) ?? today.addingTimeInterval(36 * 3600)
+        let windowUpper = today.addingTimeInterval(7 * 24 * 3600)
 
         let raw = await fetchAll()
         if raw.isEmpty {   // 网络/配置失败：回退到上次缓存，避免误显示空
@@ -113,7 +114,7 @@ enum WorldCupAPI {
                 status: (fm.status ?? "").uppercased(),
                 progress: nil,
                 group: groupLetter(fm.group),
-                venue: fm.venue ?? Fixtures.venue(fm.homeTeam?.name ?? "", fm.awayTeam?.name ?? ""),
+                venue: fm.venue ?? Fixtures.venue(fm.homeTeam?.name ?? "", fm.awayTeam?.name ?? "", id: fm.id),
                 city: nil,
                 goals: fm.goals ?? [],
                 minute: fm.minute,
@@ -131,7 +132,7 @@ enum WorldCupAPI {
             guard let dt = m.date, dt >= windowLower, dt <= windowUpper else { continue }
             if finishedStatuses.contains(m.status) { results.append(m) }
             else if liveStatuses.contains(m.status) { live.append(m) }
-            else if upcomingStatuses.contains(m.status) { upcoming.append(m) }
+            else if upcomingStatuses.contains(m.status), !m.home.isEmpty, !m.away.isEmpty { upcoming.append(m) }
         }
 
         if debugForceRestDay { live = []; results = []; upcoming = [] }   // 模拟休赛日
